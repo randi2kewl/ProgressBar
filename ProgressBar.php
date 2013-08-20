@@ -31,15 +31,18 @@ class ProgressBar {
       private $bar_length;
       private $total;
       private $start_time = null;
+      private $use_shimmer;
+      private $shimmer_location = 0;
 
       /*
             Only value needed is the total number of cycles to be completed
 
             Optional: bar_length is the length of the bar (total number of '=')
       */
-      public function __construct($total, $bar_length = 40) { 
+      public function __construct($total, $bar_length = 40, $use_shimmer = false) { 
 	     $this->bar_length = $bar_length;
 	     $this->total = $total;
+         $this->use_shimmer = $use_shimmer;
       }
 
       /*
@@ -72,7 +75,18 @@ class ProgressBar {
                   $blocks = round($percent * $this->bar_length );
 
                   // Display the progress
-                  $output .= str_repeat("=", $blocks) . ">";
+                  $shaft = str_repeat("=", $blocks) . ">";
+                  
+                  //Add shimmer effect if enabled
+                  if ($this->use_shimmer) {
+                      if ( $done%10 == 0 ){
+                          $this->shimmer_location = --$this->shimmer_location < 0 ? $this->bar_length : $this->shimmer_location;
+                      }
+                      if ( $this->shimmer_location!=strlen($shaft)-1) { //don't shimmer over the arrow
+                          $shaft = substr_replace($shaft, ' ', $this->shimmer_location, 1);
+                      }
+                  }
+                  $output .= $shaft;
                   $output .= str_repeat(" ", ($this->bar_length - $blocks));
                   $output .= "|   ";
             } else {
